@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>สมัครสมาชิก</title>
+  <meta charset="UTF-8">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <h2>แบบฟอร์มสมัคร</h2>
+  <form id="registerForm">
+    <input type="text" id="name" placeholder="ชื่อหรือชื่อ-นามสกุล" required><br>
+    <input type="tel" id="phone" placeholder="เบอร์ 10 หลัก" required><br>
+    <button type="submit">สมัคร</button>
+  </form>
+
+  <script>
+    let userId = "";
+    liff.init({ liffId: "YOUR_LIFF_ID" }).then(() => {
+      return liff.getProfile();
+    }).then(profile => {
+      userId = profile.userId;
+    });
+
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const phone = document.getElementById("phone").value;
+
+      fetch("https://your-server.com/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone, user_id: userId })
+      }).then(() => alert("เสนบที่สมัครเรียบร้อย"));
+    });
+  </script>
+</body>
+</html>
