@@ -1,86 +1,42 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>สมัครสมาชิก</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to bottom right, #f3f4f6, #e0f2fe);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .form-box {
-      background: white;
-      padding: 2rem;
-      border-radius: 1rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-    }
-    .form-box h2 {
-      margin-bottom: 1rem;
-      color: #2563eb;
-    }
-    .form-box input {
-      width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 0.5rem;
-      font-size: 1rem;
-    }
-    .form-box button {
-      width: 100%;
-      background: #2563eb;
-      color: white;
-      padding: 0.75rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-    }
-    .form-box button:hover {
-      background: #1e40af;
-    }
-  </style>
-</head>
-<body>
-  <div class="form-box">
-    <h2>สมัครสมาชิก</h2>
-    <form id="registerForm">
-      <input type="text" id="name" placeholder="ชื่อหรือ / ชื่อ-นามสกุล" required>
-      <input type="tel" id="phone" placeholder="เบอร์โทร 10 หลัก" required>
-      <button type="submit">สมัคร</button>
-    </form>
-  </div>
+<script>
+  let userId = "";
 
-  <script>
-    let userId = "";
-    liff.init({ liffId: "2007665564-bRQjorX0" }).then(() => {
-      return liff.getProfile();
-    }).then(profile => {
-      userId = profile.userId;
-    });
+  // รอให้ LIFF พร้อมก่อน
+  window.onload = function () {
+    liff.init({ liffId: "2007665564-bRQjorX0" })
+      .then(() => {
+        if (!liff.isInClient()) {
+          alert("กรุณาเปิดหน้านี้จากในแอป LINE เท่านั้นค่ะ");
+          return;
+        }
 
-    document.getElementById("registerForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const name = document.getElementById("name").value;
-      const phone = document.getElementById("phone").value;
-
-      fetch("https://your-server.com/webhook", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, user_id: userId })
+        return liff.getProfile();
       })
-      .then(() => alert("เสนบที่สมัครเรียบร้อย"));
-    });
-  </script>
-</body>
-</html>
+      .then(profile => {
+        if (profile) userId = profile.userId;
+      })
+      .catch(err => {
+        alert("เกิดข้อผิดพลาดกับ LIFF: " + err);
+      });
+  };
+
+  // จัดการเมื่อผู้ใช้กด submit
+  document.getElementById("registerForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const name = document.getElementById("name").value;
+    const phone = document.getElementById("phone").value;
+
+    if (!userId) {
+      alert("ไม่สามารถดึง LINE ID ได้ กรุณาเปิดจากในแอป LINE");
+      return;
+    }
+
+    fetch("https://<YOUR_BACKEND_URL>/webhook", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, phone, user_id: userId })
+    })
+    .then(res => res.ok ? alert("✅ สมัครเรียบร้อยแล้วค่ะ") : alert("❌ สมัครไม่สำเร็จ"))
+    .catch(() => alert("❌ ไม่สามารถส่งข้อมูลได้"));
+  });
+</script>
