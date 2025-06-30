@@ -15,7 +15,6 @@
       align-items: center;
       height: 100vh;
     }
-
     .form-container {
       background-color: white;
       border-radius: 16px;
@@ -24,13 +23,11 @@
       width: 90%;
       max-width: 400px;
     }
-
     .form-container h2 {
       text-align: center;
       color: #2e7d32;
       margin-bottom: 24px;
     }
-
     input {
       width: 100%;
       padding: 12px;
@@ -39,7 +36,6 @@
       border-radius: 8px;
       font-size: 16px;
     }
-
     button {
       width: 100%;
       padding: 12px;
@@ -51,11 +47,9 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
-
     button:hover {
       background-color: #388e3c;
     }
-
     #result {
       margin-top: 12px;
       text-align: center;
@@ -68,7 +62,7 @@
     <h2>ลงทะเบียนลูกค้า</h2>
     <form id="registerForm">
       <input type="text" id="fullname" placeholder="ชื่อ-นามสกุล" required />
-      <input type="tel" id="phone" placeholder="เบอร์โทรศัพท์" required />
+      <input type="tel" id="phone" placeholder="เบอร์โทร (ห้ามซ้ำ)" required />
       <input type="email" id="email" placeholder="อีเมล" required />
       <input type="hidden" id="userId" />
       <button type="submit">ส่งข้อมูล</button>
@@ -78,29 +72,30 @@
 
   <script>
     async function main() {
+      await liff.init({ liffId: "2007666339-kj34XjbR" });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      const profile = await liff.getProfile();
+      const userId = profile.userId;
+      document.getElementById("userId").value = userId;
+
       try {
-        await liff.init({ liffId: "2007666339-kj34XjbR" });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-
-        const profile = await liff.getProfile();
-        const userId = profile.userId;
-        document.getElementById("userId").value = userId;
-
-        // ✅ ดึงข้อมูลเก่าจาก server
         const res = await fetch("https://3d2c-147-50-89-134.ngrok-free.app/customer?userId=" + userId);
-        if (!res.ok) throw new Error("Invalid response");
+        if (!res.ok) throw new Error("server error");
+
         const customer = await res.json();
-        if (customer.fullname) {
-          document.getElementById("fullname").value = customer.fullname;
-          document.getElementById("phone").value = customer.phone;
-          document.getElementById("email").value = customer.email;
-        }
+
+        if (customer.fullname) document.getElementById("fullname").value = customer.fullname;
+        if (customer.phone) document.getElementById("phone").value = customer.phone;
+        if (customer.email) document.getElementById("email").value = customer.email;
       } catch (err) {
+        console.error("เกิดข้อผิดพลาดในการโหลดข้อมูล:", err);
         document.getElementById("result").textContent = "❌ เกิดข้อผิดพลาดในการโหลดข้อมูล";
-        console.error("LIFF error:", err);
+        document.getElementById("result").style.color = "red";
       }
     }
 
@@ -126,10 +121,11 @@
         const text = await res.text();
         const result = document.getElementById("result");
         result.textContent = text;
-        result.style.color = text.includes("สำเร็จ") || text.includes("อัปเดต") ? "green" : "red";
+        result.style.color = text.includes("สำเร็จ") ? "green" : "red";
       } catch (err) {
-        document.getElementById("result").textContent = "❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
         console.error("Submit error:", err);
+        document.getElementById("result").textContent = "❌ ไม่สามารถส่งข้อมูลได้";
+        document.getElementById("result").style.color = "red";
       }
     });
   </script>
