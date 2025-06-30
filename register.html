@@ -91,6 +91,7 @@
 
         // ✅ ดึงข้อมูลเก่าจาก server
         const res = await fetch("https://3d2c-147-50-89-134.ngrok-free.app/customer?userId=" + userId);
+        if (!res.ok) throw new Error("Invalid response");
         const customer = await res.json();
         if (customer.fullname) {
           document.getElementById("fullname").value = customer.fullname;
