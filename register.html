@@ -78,14 +78,29 @@
 
   <script>
     async function main() {
-      await liff.init({ liffId: "2007666339-kj34XjbR" }); // ✅ ใส่ LIFF ID ของคุณตรงนี้
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
+      try {
+        await liff.init({ liffId: "2007666339-kj34XjbR" });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
 
-      const profile = await liff.getProfile();
-      document.getElementById("userId").value = profile.userId;
+        const profile = await liff.getProfile();
+        const userId = profile.userId;
+        document.getElementById("userId").value = userId;
+
+        // ✅ ดึงข้อมูลเก่าจาก server
+        const res = await fetch("https://3d2c-147-50-89-134.ngrok-free.app/customer?userId=" + userId);
+        const customer = await res.json();
+        if (customer.fullname) {
+          document.getElementById("fullname").value = customer.fullname;
+          document.getElementById("phone").value = customer.phone;
+          document.getElementById("email").value = customer.email;
+        }
+      } catch (err) {
+        document.getElementById("result").textContent = "❌ เกิดข้อผิดพลาดในการโหลดข้อมูล";
+        console.error("LIFF error:", err);
+      }
     }
 
     main();
@@ -100,16 +115,21 @@
         email: document.getElementById("email").value
       };
 
-      const res = await fetch("https://3d2c-147-50-89-134.ngrok-free.app/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
+      try {
+        const res = await fetch("https://3d2c-147-50-89-134.ngrok-free.app/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
 
-      const text = await res.text();
-      const result = document.getElementById("result");
-      result.textContent = text;
-      result.style.color = text.includes("สำเร็จ") ? "green" : "red";
+        const text = await res.text();
+        const result = document.getElementById("result");
+        result.textContent = text;
+        result.style.color = text.includes("สำเร็จ") || text.includes("อัปเดต") ? "green" : "red";
+      } catch (err) {
+        document.getElementById("result").textContent = "❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
+        console.error("Submit error:", err);
+      }
     });
   </script>
 </body>
