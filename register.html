@@ -79,9 +79,9 @@
   <div class="form-container">
     <h2>ลงทะเบียนลูกค้า</h2>
     <form id="registerForm">
-      <input type="text" id="fullname" placeholder="ชื่อ-นามสกุล" required />
-      <input type="tel" id="phone" placeholder="เบอร์โทร (ห้ามซ้ำ)" required />
-      <input type="email" id="email" placeholder="อีเมล" required />
+      <input type="text" id="fullname" name="fullname" placeholder="ชื่อ-นามสกุล" autocomplete="name" required />
+      <input type="tel" id="phone" name="phone" placeholder="เบอร์โทร (ห้ามซ้ำ)" autocomplete="tel" required />
+      <input type="email" id="email" name="email" placeholder="อีเมล" autocomplete="email" required />
       <input type="hidden" id="userId" />
       <button type="submit">ส่งข้อมูล</button>
       <p id="result"></p>
@@ -101,20 +101,7 @@
       const userId = profile.userId;
       document.getElementById("userId").value = userId;
 
-      try {
-        const res = await fetch("https://3d2c-147-50-89-134.ngrok-free.app/customer?userId=" + userId);
-        if (!res.ok) throw new Error("server error");
-
-        const customer = await res.json();
-
-        if (customer.fullname) document.getElementById("fullname").value = customer.fullname;
-        if (customer.phone) document.getElementById("phone").value = customer.phone;
-        if (customer.email) document.getElementById("email").value = customer.email;
-      } catch (err) {
-        console.error("เกิดข้อผิดพลาดในการโหลดข้อมูล:", err);
-        document.getElementById("result").textContent = "❌ เกิดข้อผิดพลาดในการโหลดข้อมูล";
-        document.getElementById("result").style.color = "red";
-      }
+      // ❌ ข้ามการโหลดข้อมูลจาก /customer เพื่อลด error
     }
 
     main();
